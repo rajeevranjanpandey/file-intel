@@ -95,7 +95,8 @@ Keep the project and models outside cloud-synced folders for dependable offline 
 
 ### Current architecture at a glance
 
-![File Intel architecture: eight capabilities, implemented tools, local safeguards, and scanning and organization workflows](docs/images/file-intel-architecture.png)
+<img width="1465" height="1074" alt="image" src="https://github.com/user-attachments/assets/7f1afb79-145c-4bd8-ba93-06631712b825" />
+
 
 The diagram shows the current implementation. Scans run on demand, the index is updated throughout processing, and local AI is optional. The table below explains each stage in more detail.
 
