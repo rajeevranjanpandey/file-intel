@@ -1,0 +1,7 @@
+From: sender@example.test
+To: reader@example.test
+Subject: Offline invoice
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+
+Invoice INV-2026-0142. The accounting department requests payment of 4200 AED for office equipment. Payment is due within thirty days. Bank transfer reference is INV-2026-0142.

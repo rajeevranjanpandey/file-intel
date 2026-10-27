@@ -1,0 +1,1 @@
+Text retrieval design. Hybrid search combines keyword matching with semantic embeddings. Query vectors retrieve relevant passages through cosine similarity.

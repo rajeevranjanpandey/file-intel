@@ -1,0 +1,1 @@
+Natural language processing research. Sentence embeddings represent text as vectors. Semantic similarity compares documents using cosine distance and transformer representations.

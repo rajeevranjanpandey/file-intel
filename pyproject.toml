@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+[project]
+name = "local-file-intel"
+version = "1.0.1"
+description = "Offline file understanding, hybrid search, clustering and reversible organization"
+requires-python = ">=3.12,<3.13"
+license = "MIT"
+[project.scripts]
+file-intel = "app.cli:cli"
+[tool.setuptools.packages.find]
+include = ["app*", "eval*"]
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = ["integration: real models and parser processes"]
+[tool.ruff]
+line-length = 120
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F"]

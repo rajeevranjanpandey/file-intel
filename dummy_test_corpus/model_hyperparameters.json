@@ -1,0 +1,8 @@
+{
+  "pipeline": "semantic-clustering",
+  "embedding_model": "all-MiniLM-L6-v2",
+  "dimension": 384,
+  "clustering_algorithm": "HDBSCAN",
+  "min_cluster_size": 3,
+  "distance_metric": "cosine"
+}

@@ -1,0 +1,19 @@
+.venv*/
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+data/
+tmp/
+wheels/
+models/*/
+!models/manifest.json
+eval/generated/
+
+*.ses
+
+# Local reports, personal research and operating-system files
+output/
+industrial_diagnosis/
+.DS_Store
+.env
+.env.*

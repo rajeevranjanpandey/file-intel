@@ -1,0 +1,20 @@
+[paths]
+roots = ["demo"]
+data = "data"
+models = "models"
+
+[limits]
+max_file_mb = 50
+max_pages = 100
+timeout_seconds = 120
+archive_depth = 3
+archive_members = 500
+archive_total_mb = 100
+
+[nlp]
+embedding_model = "minilm"
+llm_model = "qwen"
+semantic_threshold = 0.93
+min_cluster_size = 3
+min_samples = 2
+use_llm = true

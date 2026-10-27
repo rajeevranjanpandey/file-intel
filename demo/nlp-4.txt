@@ -1,0 +1,1 @@
+Transformer language model evaluation. Tokenization splits text into subword units. Sentence embeddings support semantic search and unsupervised document clustering.

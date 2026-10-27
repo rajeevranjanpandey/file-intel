@@ -1,0 +1,3 @@
+# Orion garden project
+
+The Orion garden project will plant twelve native trees beside the library. Volunteers will water the trees every Monday. The project budget is 4200 AED. The first planting day is 18 October 2026.
