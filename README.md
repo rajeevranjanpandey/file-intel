@@ -1,224 +1,198 @@
-# Local File Intel
+# File Intel
 
-An offline document-understanding application built from the supplied **Local-First NLP Architecture Review v2.1 PDF**. It discovers files by actual content, extracts text and tables, builds a searchable knowledge index, identifies duplicates, groups related documents, and proposes reversible organization actions.
+**Find, understand, and organize your documents by their content—not just their filenames.**
 
-The default folder is the included `demo/` corpus. Your original PDF, TXT and architecture images have not been moved or modified.
+File Intel runs on your computer. It reads local documents, finds matching or related content, and helps you put files into useful folders. Once dependencies and models are installed, normal operation does not require an internet connection or an API key.
 
-## Start the app
+[Run locally](#run-locally) · [Architecture](#architecture) · [How decisions are made](#how-decisions-are-made) · [System design](#system-design) · [Improvements](#what-could-be-improved)
 
-### Run on this Mac (already set up)
+## What can I do with it?
 
-Open Terminal in this project's folder and run:
+| You want to… | Use… |
+| --- | --- |
+| Find a document by a phrase, filename, or idea | **Search**, with matching passages as evidence |
+| Find exact copies, revisions, or shorter summaries | **Duplicates**, with reasons to review each match |
+| Explore documents about the same topic across different formats | **Collections** |
+| Put matching files from several folders into one folder | **Organize → Same content** |
+| Ask a question about your indexed documents | **Search → Ask your library**, with passage citations |
+| Review or undo proposed file changes | **Activity** |
+
+**Example:** `plan.md`, `plan.txt`, and `plan.pdf` can share one destination folder when their complete extracted text matches. A revised budget stays separate under **Same content**, but can belong to the same topic **Collection**.
+
+## Run locally
+
+### Already set up on this Mac
+
+Open Terminal in the project folder:
 
 ```sh
 sh scripts/run_macos.command
 ```
 
-Or double-click `scripts/run_macos.command` in Finder. Keep the Terminal window open, then visit **http://127.0.0.1:8501/** in your browser. Stop the app with **Control+C** in that Terminal window; run the same command to start it again. You do not need to reinstall dependencies each time.
+Open **http://127.0.0.1:8501/**. Keep Terminal open while using the app. Press **Control+C** there to stop it. Run the same command to restart; you do not need to reinstall anything.
 
-The launcher checks the project's local environments and its prepared runtime cache, including the older macOS cache. It uses a cache only when it belongs to this project.
+### First-time setup from GitHub
 
-### First-time setup on another computer
-
-Install Python 3.12 on the destination computer. From the project folder, set up a fresh environment once:
+You need **Python 3.12**, Git, and internet access for the initial package/model downloads. The repository is private, so cloning requires GitHub access.
 
 ```sh
-python scripts/install.py
+git clone https://github.com/rajeevranjanpandey/file-intel.git
+cd file-intel
+```
+
+Create a fresh environment on this computer:
+
+| macOS / Linux | Windows PowerShell |
+| --- | --- |
+| `python3.12 -m venv .venv-local` | `py -3.12 -m venv .venv-local` |
+| `source .venv-local/bin/activate` | `.\.venv-local\Scripts\Activate.ps1` |
+
+Then run these commands in that activated environment:
+
+```sh
+python -m pip install -r requirements.txt
+python scripts/bundle_models.py
+python -m app.cli models verify
 python scripts/run.py
 ```
 
-Use `python3` if that is the name of your Python 3.12 command, or `py -3.12` on Windows. After setup, double-click `scripts/run.command` on macOS, or `scripts/run_windows.bat` on Windows. The shared Python launcher also works on Linux.
+The model-bundling step downloads the local embedding, document/OCR, and Qwen models and records their hashes. **Model weights are not stored in GitHub.** If you already have a complete verified `models/` folder, copy it into the project and skip the download step.
 
-Open **http://127.0.0.1:8501**. Processing stays on this device; no account or API key is required. Online setup downloads dependencies once. Runtime uses local models from `models/` and works offline after setup and model verification.
+If PowerShell blocks activation, use `.\.venv-local\Scripts\python.exe` in place of `python` for those commands. Native dependencies may require your operating system's C/C++ build tools. The complete environment and models occupy several GB; “small local model” does not mean the entire application is tiny.
 
-**Copy source code, models and sample files between computers; create the environment on each computer.** Copied virtual environments and compiled wheels cannot be shared across operating systems or processor types. `requirements.txt` resolves native packages for the current computer; `requirements.lock` preserves the original offline bundle. If a native package must build from source, install the operating system's C/C++ build tools first. See `docs/DEPLOYMENT.md`.
+### Install on a computer without internet
 
-The launcher derives all project paths from its own location and checks the available environments before using one. `FILE_INTEL_PYTHON` can select an installed Python command without editing the launcher. Legacy launcher names continue to forward to the shared launcher.
-
-### Install without internet
-
-You need Python 3.12 installed, the complete `models/` directory with its manifest, and a verified `wheels/` bundle for the destination computer. The existing wheel bundle targets **Apple Silicon macOS / Python 3.12**; it cannot install on Windows or an Intel Mac.
-
-From the project folder:
+Bring Python 3.12, the project source, the complete verified `models/` folder, and a compatible `wheels/` bundle with `wheels/manifest.json`. Then, from the project folder:
 
 ```sh
 python3.12 scripts/install.py --offline
-python3.12 scripts/run.py --python -m app.cli models verify
 python3.12 scripts/run.py
 ```
 
-An environment that already exists is preserved. To make a separate installation, use `python3.12 scripts/install.py --offline --env .venv-new`, then start it with `python3.12 scripts/run.py --env .venv-new`.
+On Windows, use `py -3.12` instead of `python3.12`. The existing wheel bundle is for **Apple Silicon macOS / Python 3.12**; other platforms need their own bundle. The installer preserves existing environments and verifies wheels, dependencies, and models. See [deployment instructions](docs/DEPLOYMENT.md) for alternate environments and backups.
 
-The small project snapshot ZIP contains source, settings, sample files and an index backup; it **does not include models, wheels or Python environments**. Keep those assets separately or use the complete offline release bundle. Install and keep the project outside cloud-synced storage for dependable offline startup. Any source documents in iCloud must be downloaded before disconnecting.
+Keep the project and models outside cloud-synced folders for dependable offline use. Cloud documents must also be downloaded locally. A source snapshot ZIP does not contain the large models, wheels, or virtual environments.
 
-### Check that it works
+### Try the sample workflow
 
-1. Open **Library → Scan & Index** to index the supplied sample documents.
-2. Search for `Orion garden project`; the Markdown, PDF and text samples should appear.
-3. In **Collections**, refresh the groups. The top-right folder icon opens the collection's original-file list; click a filename to reveal its location in your file manager.
-4. In **Organize**, choose **Same content**, then **Preview folder structure**. The matching Orion files should share a folder; the revised text should stay separate. Previewing does not move files. Changes require proposals and approval in **Activity**.
+1. **Library → Scan & Index:** read the included `demo/` documents, or connect your own folders.
+2. **Search:** enter `Orion garden project`. Watch Scope → Match words → Compare meaning → Rank → Show evidence complete.
+3. **Collections → Refresh collections:** browse topic groups. The top-right folder icon lists original files; clicking a filename reveals its location in your file manager.
+4. **Organize → Same content → Preview folder structure:** inspect which matching files will share a folder. Select files across multiple source folders if needed.
+5. **Create move proposals**, then review and approve them in **Activity**. Previewing and creating collections do not move files. Undo is available for completed actions when its safety checks pass.
 
-Run automated checks from the project folder:
+### If it will not start
+
+| Symptom | What to do |
+| --- | --- |
+| No compatible environment | Complete the first-time setup with Python 3.12. Do not copy a virtual environment between computers. |
+| Missing or altered models | Restore a verified model bundle, or run the bundler while online, then verify again. |
+| Port 8501 already in use | Open the running app, or stop its Terminal process before restarting. |
+| Slow or blank startup from iCloud | Download the project files; preferably keep a local copy outside cloud storage. |
+| Changes are not visible | Refresh the browser. Restart the app after Python-module changes. |
+
+## Architecture
+
+### Current architecture at a glance
+
+![File Intel architecture: eight capabilities, implemented tools, local safeguards, and scanning and organization workflows](docs/images/file-intel-architecture.png)
+
+The diagram shows the current implementation. Scans run on demand, the index is updated throughout processing, and local AI is optional. The table below explains each stage in more detail.
+
+### What each tool does in the current build
+
+| Stage | Implemented tools | Purpose and output |
+| --- | --- | --- |
+| 1. Discover files | Python `pathlib`, file metadata, SHA-256 | Scan connected roots and identify new or changed files. Manual scans; no background watcher. |
+| 2. Detect type | **Magika** | Inspect content to identify the real format, even when the extension is misleading. |
+| 3. Extract content | **Docling**, **RapidOCR / ONNX Runtime**, format-specific readers | Extract text, structure, tables, and page evidence. OCR reads supported scanned documents and images. |
+| 4. Represent meaning | **Sentence Transformers**, **all-MiniLM-L6-v2**, Unicode normalization | Normalize text, create chunks, and turn them into vectors for comparison. An optional multilingual MiniLM can be installed separately. |
+| 5. Compare and group | **SHA-256**, word-overlap rules, **NumPy**, **scikit-learn HDBSCAN** | Find exact/same-text matches, suggest revisions or summaries, and discover topic collections. |
+| 6. Explain with local AI | **Qwen3 0.6B GGUF**, **llama-cpp-python** | Suggest collection names, descriptions, and tags; optionally write short answers from retrieved passages. CPU inference; no cloud LLM. |
+| 7. Store and retrieve | **SQLite**, **FTS5**, vectors stored as binary data | Persist metadata, text, chunks, embeddings, collections, decisions, actions, and audit records. NumPy performs vector comparisons. |
+| 8. Interact and act | **Streamlit**, **Typer CLI**, native file-manager integration | Search, review evidence, browse original locations, preview organization, approve changes, and undo them. |
+
+RapidOCR supplies OCR; Python rules extract key facts. This build uses SQLite and Streamlit without a separate database server or web API.
+
+## How decisions are made
+
+There are three separate workflows. Storage happens throughout them, rather than only at the end of a pipeline.
+
+**Indexing:** connected folders → file metadata and hashes → detected type → extracted text → normalized chunks and embeddings → local index. Unchanged indexed files are reused. Failed extraction is retried once, then marked for attention without moving the source file.
+
+**Search:** query and filters → keyword matches in FTS5 + semantic matches from local embeddings → combined ranking → documents with supporting passages. The interface shows each stage. “Ask your library” uses retrieved passages and requires citations; a fallback quotes evidence when generation fails its checks.
+
+**Organization:** matching content or topic collections → destination preview → proposed actions → user approval → checked file operation → audit record. Undo checks file integrity before restoring the original location.
+
+| Decision | Rule | Meaning for the user |
+| --- | --- | --- |
+| Are these exact copies? | Equal file SHA-256 hashes | The complete file bytes match. |
+| Is the text the same across formats? | Both extractions completed; normalized text hashes match | A PDF, Markdown file, and text file can be grouped. Layout, images, and metadata may still differ. |
+| Is one an edited version? | Shared wording or sufficiently high semantic similarity | A review suggestion with changed-word evidence—not proof that one file is disposable. |
+| Is one a summary or excerpt? | Shorter length plus copied wording, or semantic similarity anchored by shared figures | Related content, not an exact duplicate. Summaries are not offered for removal. |
+| Do these files share a topic? | HDBSCAN clusters document vectors | A suggested collection. Ambiguous documents can remain **Not yet grouped**. |
+| Can the AI choose a name? | Representative excerpts and keywords, constrained JSON output | Optional readable labels. Keyword labels remain available if the model fails. |
+| May a file be moved? | Approved action, allowed path, matching source hash, safe destination | Refuse overwrites and unsupported cross-volume moves. The LLM never authorizes a move. |
+
+**Collections are virtual groups. Organize creates physical folders only when approved actions run.** Date-based organization uses last-modified dates, not dates inferred from document content.
+
+## System design
+
+The app is a local Python application with a browser interface bound to `127.0.0.1:8501`. It does not require a hosted API or separate database service. Streamlit and the CLI share the same application modules.
+
+| Code | Responsibility |
+| --- | --- |
+| [`ui/`](ui/) | Screens, collection navigation, progress, and review controls |
+| [`app/discover.py`](app/discover.py), [`app/extract.py`](app/extract.py) | File discovery and bounded document extraction |
+| [`app/represent.py`](app/represent.py), [`app/search.py`](app/search.py) | Text/vector representations and retrieval |
+| [`app/analyze.py`](app/analyze.py), [`app/ask.py`](app/ask.py) | Duplicate relationships, topic grouping, and grounded answers |
+| [`app/local_model.py`](app/local_model.py) | Local language-model inference in an isolated process |
+| [`app/organize.py`](app/organize.py), [`app/actions.py`](app/actions.py) | Folder plans, approval checks, execution, and undo |
+| [`app/store.py`](app/store.py), [`app/guard.py`](app/guard.py) | SQLite persistence, integrity checks, and access/network controls |
+| [`config.toml`](config.toml) | Connected roots, storage paths, extraction limits, and model settings |
+| [`scripts/`](scripts/), [`tests/`](tests/) | Installation, model preparation, launchers, and regression checks |
+
+Parser and language-model work runs in separate processes with time limits, so a bad document or native-model failure can be contained. Model files are checked against their manifest. SQLite records durable action intent and a hash-linked audit trail; recovery can reconcile interrupted file operations.
+
+### Privacy and safety boundaries
+
+- Document processing and inference use local models. Python network controls block outbound application connections during normal operation; setup/model downloads are a separate online step.
+- These controls are **not an operating-system firewall**. Other applications and cloud-sync services can still access the network.
+- Scanning reads source files. Approved organization actions deliberately change their locations. Soft deletion uses recovery storage rather than permanent deletion.
+- The current SQLite index stores extracted content **without application-level encryption**. Protect the computer and its backups with appropriate OS controls; SQLCipher is a possible future improvement.
+- The audit chain detects certain modifications, but is not a digital signature against someone able to rewrite the entire database.
+
+## What could be improved?
+
+| Area | Current limitation | Useful next step |
+| --- | --- | --- |
+| Search relevance | Lower-ranked semantic results can be loosely related | Calibrate relevance cutoffs and evaluate optional reranking on real queries. |
+| Large libraries | Pairwise comparisons can grow quadratically; vector search scans stored vectors | Benchmark realistic libraries, then introduce candidate indexing or a local vector index. |
+| Grouping quality | Topic groups and version/summary detection are suggestions and heuristics | Evaluate on human-labelled documents across formats and languages. |
+| Arabic and multilingual use | English MiniLM is the default; another model is optional | Measure retrieval and grouping quality before claiming language coverage. |
+| Offline distribution | Python, native dependencies, models, and platform-specific wheels must be prepared | Produce tested, versioned installers for each supported platform. |
+| Data protection | Local index is not application-encrypted | Add encryption, key management, and tested backup/restore procedures. |
+| Freshness and file support | Manual rescans; some formats remain metadata-only or partially extracted | Add controlled background monitoring and broaden extraction coverage. |
+
+Small synthetic tests demonstrate specific behavior; they do not establish production-scale accuracy, universal format support, or fully reliable AI answers.
+
+## Testing and further reading
+
+For a fresh online setup, install the test tools into the activated environment:
 
 ```sh
-# Full regression suite, including real local models and extraction:
+python -m pip install pytest ruff
 python scripts/run.py --python -m pytest -q
-# Only the added sample-corpus checks:
 python scripts/run.py --python scripts/verify_grouping_test.py
-# Collection navigation and location controls:
-python scripts/run.py --python -m pytest tests/test_collection_dashboard.py tests/test_locations.py -q
 ```
 
-Use `python3` or `py -3.12` instead of `python` when appropriate. Real-model tests take several minutes and use temporary copies for move/undo tests.
+The offline lockfile already includes the test tools. Real parser/model tests take several minutes and use temporary copies for move/undo checks. On this Mac, the last full run passed **68 tests** before the collection-navigation update; the subsequent focused navigation/location run passed **5 tests**. These are historical checks, not a claim that every future environment will behave identically.
 
-### Startup troubleshooting
+- [Detailed operations and CLI reference](docs/OPERATIONS.md)
+- [Deployment and backups](docs/DEPLOYMENT.md)
+- [Technical architecture](docs/ARCHITECTURE.md)
+- [Tool research](docs/RESEARCH.md)
+- [Validation scope and limitations](docs/VALIDATION.md)
+- [Third-party licenses](docs/THIRD_PARTY.json)
 
-- **No compatible environment found:** run the first-time installer with Python 3.12. Do not copy a virtual environment from another computer.
-- **Models missing or altered:** restore the complete verified models directory from your offline bundle, then run the model-verification command above. Installing Python packages alone does not supply model weights.
-- **Port 8501 already in use:** open the existing app at the URL above, or stop its Terminal process with Control+C before relaunching.
-- **Blank or slow startup from iCloud:** ensure the project files are downloaded locally. Keep the complete project and runtime outside cloud-synced folders when possible.
-- **UI edits are not visible:** refresh the browser. If Python modules changed, stop and restart the app as well.
-
-## Workflow
-
-1. **Connect folders** lets you choose several folders on your device or enter one path per line. **Scan & Index** reads their files and subfolders.
-2. **Search** finds exact tokens, filenames, or meaning, with source excerpts and page references.
-3. **Find duplicates** sorts matches into four kinds. Exact copies share identical bytes. Same-text files match after normalization. Edited versions keep most of their wording, and the review card lists the words that changed. Summaries and excerpts are much shorter files that quote or restate a longer one, anchored by shared figures such as amounts or reference numbers. Summaries are never offered for removal.
-4. **Group related files** builds HDBSCAN topic groups and retains uncertain documents as noise. Keyword labels remain visible alongside local Qwen interpretations.
-5. **Approvals** shows proposed moves, renames and soft-deletes. Approve and execute are separate actions. Undo verifies the moved file's hash before restoring it.
-6. **System** checks model integrity, extraction issues and the audit chain.
-
-### Features added in October 2026
-
-- **Ask your library** (Search → Ask your library) answers a question from your indexed files. Hybrid search finds up to five passages; identical copies are merged into one passage. A passage found only by meaning must reach a cosine of 0.25, and word matches alone count only when the question contains an identifier such as `INV-2026-0142`. The local Qwen model writes at most three sentences and must cite passage numbers it was given. If the model is off, slow or breaks that contract, the two sentences closest in meaning to the question are quoted instead, each with its passage number. A question with no matching passage gets no answer rather than a guess.
-- **More like this** lists the files closest in meaning to any file. It is available on search results, Ask passages, key-fact results and collection file lists.
-- **Version timelines** in Duplicates chain files linked as edited versions, oldest to newest by modification date. When every version has the same file type, **Keep latest** proposes moving the older versions to recovery storage. Versions in different formats are never offered for bulk removal.
-- **Batch review** in Duplicates marks every pair on the current page as Keep both or Confirmed duplicate, and **Remove extra exact copies** keeps the first file in each identical group and proposes moving the rest. Like every change to files, these proposals wait for approval in Activity and can be undone.
-- **Key facts** are extracted at indexing time and back-filled for existing indexes: amounts with their currency (including درهم), dates, reference numbers, organisations with a legal suffix, and email addresses. Choose one in Search → Key fact to list every file that mentions it.
-- **Search language** in Settings switches between the English model and an optional multilingual model for Arabic and more than 50 other languages. Install it once while connected with `python scripts/run.py --python scripts/bundle_models.py --multilingual` (about 470 MB). Switching rebuilds the index so that every vector comes from one model.
-- **Export review report** in Settings downloads the duplicate decisions as CSV and a full HTML report (matches, collections and measured quality) that can be printed to PDF from a browser. Exports list file names only.
-
-Development is automated; the finished product deliberately retains the specification's human approval gate for changes to source files. It never automatically deletes documents based on a model score.
-
-## Configure folders and limits
-
-Edit `config.toml`. Relative paths resolve against that file's directory. Keep the data and model folders outside every source root.
-
-You can also connect folders directly from the sidebar, Settings, or Organize. Connections persist without restarting. In **Organize → Choose files**, filter by several source folders and select individual files across them. Filenames include a compact folder label to distinguish files with the same name.
-
-```toml
-[paths]
-roots = ["demo", "/absolute/path/to/documents"]
-data = "data"
-models = "models"
-```
-
-Mounted external drives can be roots. Unavailable roots are reported without declaring all their files deleted. Rescan manually to detect changes. Symlinks are excluded, and the application's trash folders are not ingested.
-
-Defaults: 50 MB input cap, 100-page extraction range, 120-second parser deadline, archive depth 3, 500 archive members, 100 MB cumulative expanded content. Oversize files retain searchable metadata. Parser failures are retried once, then quarantined in the index without moving the source. Changing the file permits a fresh scan.
-
-## Command line
-
-```sh
-python scripts/run.py --python -m app.cli --help
-python scripts/run.py --python -m app.cli scan
-python scripts/run.py --python -m app.cli index
-# After changing model or extraction settings:
-python scripts/run.py --python -m app.cli index --rebuild
-# Retry temporary extraction failures without editing source files:
-python scripts/run.py --python -m app.cli index --retry-failed
-python scripts/run.py --python -m app.cli dedupe
-python scripts/run.py --python -m app.cli cluster
-python scripts/run.py --python -m app.cli search 'INV-2026-0142'
-python scripts/run.py --python -m app.cli search 'group documents by meaning' --mode semantic
-python scripts/run.py --python -m app.cli export --format json
-python scripts/run.py --python -m app.cli models verify
-python scripts/run.py --python -m app.cli audit verify
-python scripts/run.py --python -m app.cli eval run
-python scripts/run.py --python -m app.cli ask 'Which invoice is due in thirty days?'
-python scripts/run.py --python -m app.cli similar demo/finance-1.txt
-python scripts/run.py --python -m app.cli facts demo/finance-1.txt
-python scripts/run.py --python -m app.cli report --format html > report.html
-```
-
-Use `--config /path/to/config.toml` before the subcommand for a separate corpus/index. Exports print to stdout; UI exports download locally. The core search function also supports root, type, date, cluster and tag filters.
-
-```sh
-python scripts/run.py --python -m app.cli propose move /source/file.txt --dst /source/new-name.txt
-python scripts/run.py --python -m app.cli approve 1
-python scripts/run.py --python -m app.cli apply 1
-python scripts/run.py --python -m app.cli undo 1
-python scripts/run.py --python -m app.cli recover
-```
-
-`delete` is always a move into `<root>/.file-intel-trash/<action-id>/`. There is no permanent-purge command. Cross-volume moves and overwrites are refused. Recovery reconciles interrupted filesystem operations against the durable action intent and the file hash.
-
-## Offline installation
-
-Prepare a complete wheel bundle for the destination operating system, processor and Python 3.12 version, together with its `wheels/manifest.json` and matching `requirements.lock`.
-
-```sh
-python scripts/install.py --offline
-python scripts/run.py
-```
-
-The installer verifies wheel hashes and uses `--no-index`; it never overwrites an existing environment. Choose a fresh name with `--env .venv-new` if needed, then launch it with `python scripts/run.py --env .venv-new`. The originally included compiled wheels are for one processor/platform combination and are not a universal offline installer.
-
-To install the interface alone, use `python scripts/install.py --ui-only`. AI indexing requires the full dependencies and verified local models. Setup verifies models and fails if they are absent or altered. Developers can prepare missing models while connected with `python scripts/bundle_models.py`; this rewrites the manifest and should be done deliberately.
-
-## Validation and limitations
-
-```sh
-python scripts/run.py --python -m pytest -q
-python scripts/run.py --python -m ruff check app ui eval tests scripts
-```
-
-`eval/report.json` contains precision and recall for all four match types, a comparison between the version detector and a plain cosine-threshold baseline, adjusted Rand index with a cluster-size sweep, MRR, recall and nDCG for keyword, semantic and hybrid search, and throughput. **Settings → Quality report** shows the latest results in the app. The 24-document synthetic English corpus now includes an edited version, a summary, an excerpt and same-topic distractors, but it is still small and cannot establish real-world or multilingual accuracy. Read `docs/VALIDATION.md` for tested behavior and scope.
-
-- MiniLM is the English-focused default. No claim is made about Arabic retrieval quality.
-- RAR/7z and audio/video are metadata-only. Email attachment names are retained; attachment-content extraction is not enabled.
-- Optional v2 features such as watchdog, SQLCipher, MinHash, NER and sqlite-vec are not required by this build and are not installed as application capabilities.
-- Similarity is computed with blockwise NumPy matrix products, and only pairs above a 0.70 cosine floor receive the slower wording checks. The comparison is still quadratic in the number of documents, so there is no claim of a 100,000-file performance benchmark.
-- Version and summary detection are transparent heuristics (word 3-gram overlap, content-word coverage and shared figures), not a trained model. A summary that repeats no amount or identifier is not detected, and two documents derived from the same source can be linked to each other.
-- The audit chain detects edits to retained rows. It is not a digital signature and cannot defeat someone who can rewrite the whole database and recompute the chain.
-- The Python network guard is defense in depth, not an operating-system sandbox for native libraries. Tests exercise offline paths; disconnecting the machine provides the strongest runtime guarantee.
-- For strict local privacy, use non-synced local folders and OS disk encryption. A cloud-synced source or project folder may be synchronized independently by the operating system.
-
-Project code is MIT licensed. Dependencies and model weights retain their original licences; see `docs/THIRD_PARTY.json` and the wheel/model metadata.
-# Content and date folder organization
-
-Open **Organize** to preview a new folder under a configured source root. Choose content topic, date, topic/date, date/topic, or a single folder. Content groups use document embeddings across file formats; refresh them in **Clusters** after files change. Date folders use local last-modified dates, formatted as `YYYY-MM`, `YYYY-MM-DD`, `YYYY/MM`, or `YYYY`.
-
-**Same content** creates one folder for each group of at least two selected files with identical, completely extracted text. Markdown, TXT, and PDF files can share a group. Whitespace and Unicode composition are normalized; text changes remain separate. Images, styling, and metadata are not compared by this mode. Incomplete or empty extractions are excluded. No topic model or LLM is needed to prepare this plan, and dates never divide an identical-text group. All original formats are retained.
-
-Create move proposals from the preview, then approve and execute them in **Approvals**. Destination folders are created as moves execute. Existing filenames are preserved with numeric suffixes on collisions. Undo restores each file; empty destination folders remain. Files already under the selected destination and files with pending actions are skipped. Archive members stay inside their archive. Unclustered files are optional.
-
-## Cross-format sample verification
-
-`demo/content-check/` contains six files in three folders: the same garden project as Markdown, TXT, and PDF, an additional byte-identical TXT copy, a revised project, and an unrelated recipe. Run the real parser/model and move/undo check with:
-
-```sh
-python scripts/run.py --python -m pytest tests/test_content_samples_integration.py -q
-```
-
-The test uses copies in a separate temporary index, denies application socket connections, and writes `output/content-check/verification.json` only after all assertions pass. It tests reading all six files, matching the four originals, excluding the revision and recipe from the same-content folder, search, actual moves from three folders into one, undo, incremental scanning, and retrying an unreadable file.
-
-## Keep the runtime outside cloud sync
-
-Cloud services can offload dependencies and source files, causing startup delays or extraction timeouts. The launcher keeps its bytecode cache in the operating system's temporary directory. For a fully local runtime, use the installed project environment to run `scripts/prepare_local_runtime.py`:
-
-```sh
-python scripts/run.py --python scripts/prepare_local_runtime.py --check
-python scripts/run.py --python scripts/prepare_local_runtime.py
-python scripts/run.py
-```
-
-The helper copies installed packages and verified models to a project-specific cache under the current user's home directory. It does not download packages, move source documents, or make a runtime portable between computers. The destination is calculated at runtime; no username is fixed in code.
-
-## Moving the project
-
-Paths within the project are saved relative to `config.toml`. Home-folder connections are saved with `~`, which expands to the current user's home folder. External drives remain explicit connections and must be reconnected if their mount path changes.
-
-When opening an existing index after moving the project, File Intel reconnects project-local roots only if the old root is unavailable and every present source file matches its saved hash. Both Windows and POSIX stored paths are understood. Changed, missing, ambiguous or symlinked files are not silently relinked. Pending approvals and active undo locations prevent automatic relocation of that root; review those on their original computer. Historical audit records keep their original paths and remain verifiable.
-
-For a clean deployment to another computer, use a source release with its default configuration and no existing `data/` directory. Connect the destination folders and build a fresh index. Always recreate the environment after changing computers or moving its containing directory.
+Project code is [MIT licensed](LICENSE). Dependencies and model weights retain their own licenses.
